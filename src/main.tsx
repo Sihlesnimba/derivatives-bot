@@ -5,12 +5,27 @@ import { AnalyticsInitializer } from './utils/analytics';
 import { performVersionCheck } from './utils/version-check';
 import './styles/index.scss';
 
-// Configure MobX to handle multiple instances in production builds
+// Configure MobX
 configure({ isolateGlobalState: true });
 
-// Perform version check FIRST - before any other operations
-performVersionCheck();
+// Force dark theme on first load
+const saved_theme = localStorage.getItem('theme');
+if (!saved_theme) {
+    localStorage.setItem('theme', 'dark');
+}
 
+// Sync DOM classes
+const theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+
+document.documentElement.classList.remove('light', 'dark');
+document.documentElement.classList.add(theme);
+
+document.body.classList.remove('theme--light', 'theme--dark');
+document.body.classList.add(theme === 'dark' ? 'theme--dark' : 'theme--light');
+
+// Init services
+performVersionCheck();
 AnalyticsInitializer();
 
+// Render app ✅
 ReactDOM.createRoot(document.getElementById('root')!).render(<AuthWrapper />);
