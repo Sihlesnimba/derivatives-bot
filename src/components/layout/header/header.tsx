@@ -20,6 +20,9 @@ type TAppHeaderProps = {
     isAuthenticating?: boolean;
 };
 
+// 🔗 Your Deriv affiliate signup link
+const DERIV_SIGNUP_URL = 'https://track.deriv.com/_8Lovsuxt-L90QQMXeD9If2Nd7ZgqdRLk/1/';
+
 const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
     const { isDesktop } = useDevice();
     const { isAuthorizing, isAuthorized, activeLoginid, setIsAuthorizing } = useApiBase();
@@ -42,7 +45,6 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
             await oAuthLogout();
         } catch (error) {
             console.error('Logout failed:', error);
-            // Still try to logout even if there's an error
             await oAuthLogout();
         }
     }, [oAuthLogout]);
@@ -52,23 +54,20 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
         const urlParams = new URLSearchParams(window.location.search);
         const tokenFromUrl = urlParams.get('token');
 
-        // If there's a token in the URL, set authorizing to true
         if (tokenFromUrl) {
             setIsAuthorizing(true);
         }
     }, [setIsAuthorizing]);
 
-    // Add fallback timeout to show login button if auth never fires
+    // Fallback timeout for auth
     useEffect(() => {
         const timer = setTimeout(() => {
-            // If still authorizing after 10 seconds and no activeLoginid, show login button
             if (isAuthorizing && !activeLoginid) {
                 setAuthTimeout(true);
                 setIsAuthorizing(false);
             }
-        }, 5000); // 5 second timeout
+        }, 5000);
 
-        // Clear timeout if user gets authenticated or if not authorizing
         if (activeLoginid || !isAuthorizing) {
             setAuthTimeout(false);
             clearTimeout(timer);
@@ -79,19 +78,16 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
 
     const handleLogin = useCallback(() => {
         try {
-            // Set authorizing state immediately when login is clicked
             setIsAuthorizing(true);
-            // Redirect to OAuth URL
             window.location.replace(generateOAuthURL());
         } catch (error) {
             console.error('Login redirection failed:', error);
-            // Reset authorizing state if redirection fails
             setIsAuthorizing(false);
         }
     }, [setIsAuthorizing]);
 
     const renderAccountSection = useCallback(() => {
-        // Show account switcher and logout when user is fully authenticated
+        // Logged in
         if (activeLoginid) {
             return (
                 <div className='auth-actions'>
@@ -104,20 +100,24 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
                 </div>
             );
         }
-        // Show login button when not authorizing, or when auth timeout occurred
-        else if ((!isAuthorizing && !activeLoginid) || authTimeout) {
+
+        // Not logged in → show Sign up + Log in
+        if ((!isAuthorizing && !activeLoginid) || authTimeout) {
             return (
                 <div className='auth-actions'>
+                    <Button secondary onClick={() => window.open(DERIV_SIGNUP_URL, '_blank', 'noopener,noreferrer')}>
+                        <Localize i18n_default_text='Sign up' />
+                    </Button>
+
                     <Button tertiary onClick={handleLogin}>
                         <Localize i18n_default_text='Log in' />
                     </Button>
                 </div>
             );
         }
-        // Default: Show loader during loading states or when authorizing
-        else {
-            return <AccountsInfoLoader isLoggedIn isMobile={!isDesktop} speed={3} />;
-        }
+
+        // Loading / authorizing
+        return <AccountsInfoLoader isLoggedIn isMobile={!isDesktop} speed={3} />;
     }, [
         isAuthenticating,
         isAuthorizing,
@@ -138,21 +138,20 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
     if (client?.should_hide_header) return null;
 
     return (
-        <>
-            <Header
-                className={clsx('app-header', {
-                    'app-header--desktop': isDesktop,
-                    'app-header--mobile': !isDesktop,
-                })}
-            >
-                <Wrapper variant='left'>
-                    <MobileMenu onLogout={handleLogout} />
-                    <AppLogo />
-                    {isDesktop && <MenuItems />}
-                </Wrapper>
-                <Wrapper variant='right'>{renderAccountSection()}</Wrapper>
-            </Header>
-        </>
+        <Header
+            className={clsx('app-header', {
+                'app-header--desktop': isDesktop,
+                'app-header--mobile': !isDesktop,
+            })}
+        >
+            <Wrapper variant='left'>
+                <MobileMenu onLogout={handleLogout} />
+                <AppLogo />
+                {isDesktop && <MenuItems />}
+            </Wrapper>
+
+            <Wrapper variant='right'>{renderAccountSection()}</Wrapper>
+        </Header>
     );
 });
 
