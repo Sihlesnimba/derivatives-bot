@@ -1,9 +1,15 @@
 import { standalone_routes } from '@/components/shared';
-import { DerivLogo } from '@deriv-com/ui';
+import BrandLogoUrl from '../../../assets/brand/logo.png';
 import './app-logo.scss';
 
 export const AppLogo = () => {
-    // Always go to the new home dashboard, regardless of login state
-    // Logo now shows on both desktop and mobile
-    return <DerivLogo className='app-header__logo' href={standalone_routes.deriv_app} variant='wallets' />;
+    return (
+        <a className='app-header__logo' href={standalone_routes.deriv_app} aria-label='Go to Deriv'>
+            <img className='app-header__logo-image' src={BrandLogoUrl} alt='Your Brand' />
+
+            <span className='app-header__powered'>
+                Powered by <span className='app-header__powered-deriv'>Deriv</span>
+            </span>
+        </a>
+    );
 };
