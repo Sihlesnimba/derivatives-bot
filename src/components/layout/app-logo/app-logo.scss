@@ -20,8 +20,9 @@
 
     &__powered {
         font-size: 1.2rem;
-        opacity: 0.8;
         white-space: nowrap;
+        opacity: 0.9;
+        color: var(--text-general);
 
         @media (width < 768px) {
             display: none;
@@ -30,5 +31,6 @@
 
     &__powered-deriv {
         font-weight: 600;
+        color: var(--text-prominent);
     }
 }
