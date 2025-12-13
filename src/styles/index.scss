@@ -19,3 +19,23 @@ body {
         }
     }
 }
+
+/* ================================
+   BRAND ACCENT OVERRIDES (A9.1)
+   ================================ */
+
+:root,
+.theme--dark {
+    /* Primary brand accent */
+    --brand-primary: #3b82f6; /* Professional FinTech blue */
+    --button-primary-default: #3b82f6;
+    --button-primary-hover: #2563eb;
+    --button-primary-active: #1d4ed8;
+
+    /* Links & highlights */
+    --text-colored-background: #3b82f6;
+    --text-colored-background-hover: #2563eb;
+
+    /* Focus & outlines */
+    --border-active: #3b82f6;
+}
