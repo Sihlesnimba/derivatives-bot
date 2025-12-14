@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ChunkLoader from '@/components/loader/chunk-loader';
-import { generateOAuthURL } from '@/components/shared';
+import { redirectToLogin } from '@/components/shared/utils/login';
 import DesktopWrapper from '@/components/shared_ui/desktop-wrapper';
 import Dialog from '@/components/shared_ui/dialog';
 import MobileWrapper from '@/components/shared_ui/mobile-wrapper';
@@ -222,8 +222,9 @@ const AppWrapper = observer(() => {
     );
 
     const handleLoginGeneration = () => {
-        window.location.replace(generateOAuthURL());
+        redirectToLogin(false, localStorage.getItem('i18n_language') || 'en', true);
     };
+
     return (
         <React.Fragment>
             <div className='main'>

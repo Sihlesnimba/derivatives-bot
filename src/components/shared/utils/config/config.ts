@@ -1,29 +1,22 @@
-import brandConfig from '../../../../../brand.config.json';
 import { isStaging } from '../url/helpers';
 
-// Simple environment detection based on hostname
-const getCurrentEnvironment = (): 'staging' | 'production' => {
-    try {
-        const hostname = window.location.hostname;
-        if (hostname.includes('localhost') || hostname.includes('staging')) {
-            return 'staging';
-        }
-        return 'production';
-    } catch (error) {
-        console.error('Error detecting environment:', error);
-        return 'production'; // Safe fallback
-    }
-};
-
+/**
+ * ✅ DBot Elite – Deriv Affiliate AppID
+ * This is the SINGLE source of truth for OAuth + WebSocket
+ */
 export const APP_IDS = {
-    LOCALHOST: 36300,
-    TMP_STAGING: 64584,
+    LOCALHOST: 116584,
+    TMP_STAGING: 116584,
+
+    // Keep Deriv staging untouched
     STAGING: 29934,
     STAGING_BE: 29934,
     STAGING_ME: 29934,
-    PRODUCTION: 65555,
-    PRODUCTION_BE: 65556,
-    PRODUCTION_ME: 65557,
+
+    // ✅ Production = your affiliate AppID
+    PRODUCTION: 116584,
+    PRODUCTION_BE: 116584,
+    PRODUCTION_ME: 116584,
 };
 
 export const livechat_license_id = 12049137;
@@ -48,6 +41,8 @@ export const isProduction = () => {
     return new RegExp(`^(${all_domains.join('|')})$`, 'i').test(window.location.hostname);
 };
 
+export const isLocal = () => /localhost(:\d+)?$/i.test(window.location.hostname);
+
 export const isTestLink = () => {
     return (
         window.location.origin?.includes('.binary.sx') ||
@@ -56,20 +51,15 @@ export const isTestLink = () => {
     );
 };
 
-export const isLocal = () => /localhost(:\d+)?$/i.test(window.location.hostname);
-
 const getDefaultServerURL = () => {
     try {
-        // Check for account_type in URL params first (this overrides everything)
         const urlParams = new URLSearchParams(window.location.search);
         const urlAccountType = urlParams.get('account_type');
 
         if (urlAccountType) {
-            // Use realv2 for real accounts, demov2 for demo accounts
             return urlAccountType === 'demo' ? 'demov2.derivws.com' : 'realv2.derivws.com';
         }
 
-        // Check localStorage for saved account type
         const savedAccountType = localStorage.getItem('account_type');
         if (savedAccountType) {
             return savedAccountType === 'demo' ? 'demov2.derivws.com' : 'realv2.derivws.com';
@@ -78,7 +68,7 @@ const getDefaultServerURL = () => {
         console.error('Error in getDefaultServerURL:', error);
     }
 
-    // Always default to demo server if no account_type is specified or if there's an error
+    // Default to demo server
     return 'demov2.derivws.com';
 };
 
@@ -96,7 +86,7 @@ export const getDefaultAppIdAndUrl = () => {
 };
 
 export const getAppId = () => {
-    let app_id = null;
+    let app_id: string | number | null = null;
     const config_app_id = window.localStorage.getItem('config.app_id');
     const current_domain = getCurrentProductionDomain() ?? '';
 
@@ -115,14 +105,9 @@ export const getAppId = () => {
 
 export const getSocketURL = () => {
     const local_storage_server_url = window.localStorage.getItem('config.server_url');
+    if (local_storage_server_url) return local_storage_server_url;
 
-    if (local_storage_server_url) {
-        return local_storage_server_url;
-    }
-
-    const server_url = getDefaultServerURL();
-
-    return server_url;
+    return getDefaultServerURL();
 };
 
 export const checkAndSetEndpointFromUrl = () => {
@@ -157,58 +142,6 @@ export const checkAndSetEndpointFromUrl = () => {
 
 export const getDebugServiceWorker = () => {
     const debug_service_worker_flag = window.localStorage.getItem('debug_service_worker');
-    if (debug_service_worker_flag) return !!parseInt(debug_service_worker_flag);
-
+    if (debug_service_worker_flag) return !!parseInt(debug_service_worker_flag, 10);
     return false;
-};
-
-export const generateOAuthURL = () => {
-    try {
-        // Use brand config for login URLs
-        const environment = getCurrentEnvironment();
-        const hostname = brandConfig?.brand_hostname?.[environment];
-
-        if (hostname) {
-            // Use the current host as redirect URL (no replacement needed)
-            const currentHost = window.location.host; // includes port
-            const redirectUrl = currentHost;
-
-            return `https://${hostname}/login?redirect=${redirectUrl}`;
-        }
-    } catch (error) {
-        console.error('Error accessing brand config:', error);
-    }
-
-    // Fallback to hardcoded URLs if brand config fails
-    const currentHost = window.location.host; // includes port
-    const redirectUrl = currentHost;
-
-    if (currentHost.includes('staging')) {
-        return `https://staging-home.deriv.com/dashboard/login?redirect=${redirectUrl}`;
-    } else {
-        return `https://home.deriv.com/dashboard/login?redirect=${redirectUrl}`;
-    }
-};
-
-export const generateSignupURL = () => {
-    try {
-        // Use brand config for signup URLs
-        const environment = getCurrentEnvironment();
-        const hostname = brandConfig?.brand_hostname?.[environment];
-
-        if (hostname) {
-            return `https://${hostname}/signup`;
-        }
-    } catch (error) {
-        console.error('Error accessing brand config:', error);
-    }
-
-    // Fallback to hardcoded URLs if brand config fails
-    const currentHost = window.location.host; // includes port
-
-    if (currentHost.includes('staging')) {
-        return 'https://staging-home.deriv.com/dashboard/signup';
-    } else {
-        return 'https://home.deriv.com/dashboard/signup';
-    }
 };

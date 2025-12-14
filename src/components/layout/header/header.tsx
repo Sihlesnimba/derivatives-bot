@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { generateOAuthURL, standalone_routes } from '@/components/shared';
+import { redirectToLogin, standalone_routes } from '@/components/shared';
 import Button from '@/components/shared_ui/button';
 import useActiveAccount from '@/hooks/api/account/useActiveAccount';
 import { useOauth2 } from '@/hooks/auth/useOauth2';
@@ -33,12 +33,15 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
         allBalanceData: client?.all_accounts_balance,
         directBalance: client?.balance,
     });
-    const { getCurrency, is_virtual } = client ?? {};
 
+    const { getCurrency, is_virtual } = client ?? {};
     const currency = getCurrency?.();
     const { localize } = useTranslations();
 
-    const { isSingleLoggingIn, oAuthLogout } = useOauth2({ handleLogout: async () => client?.logout(), client });
+    const { isSingleLoggingIn, oAuthLogout } = useOauth2({
+        handleLogout: async () => client?.logout(),
+        client,
+    });
 
     const handleLogout = useCallback(async () => {
         try {
@@ -79,7 +82,7 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
     const handleLogin = useCallback(() => {
         try {
             setIsAuthorizing(true);
-            window.location.replace(generateOAuthURL());
+            redirectToLogin();
         } catch (error) {
             console.error('Login redirection failed:', error);
             setIsAuthorizing(false);
@@ -87,7 +90,6 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
     }, [setIsAuthorizing]);
 
     const renderAccountSection = useCallback(() => {
-        // Logged in
         if (activeLoginid) {
             return (
                 <div className='auth-actions'>
@@ -101,7 +103,6 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
             );
         }
 
-        // Not logged in → show Sign up + Log in
         if ((!isAuthorizing && !activeLoginid) || authTimeout) {
             return (
                 <div className='auth-actions'>
@@ -116,7 +117,6 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
             );
         }
 
-        // Loading / authorizing
         return <AccountsInfoLoader isLoggedIn isMobile={!isDesktop} speed={3} />;
     }, [
         isAuthenticating,

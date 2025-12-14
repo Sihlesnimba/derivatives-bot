@@ -1,5 +1,4 @@
 import { website_name } from '@/utils/site-config';
-import { generateSignupURL } from '../config';
 import { domain_app_ids, getAppId, getCurrentProductionDomain } from '../config/config';
 import { CookieStorage, isStorageSupported, LocalStore } from '../storage/storage';
 import { urlForCurrentDomain } from '../url';
@@ -18,7 +17,14 @@ export const redirectToLogin = (is_logged_in: boolean, language: string, has_par
 };
 
 export const redirectToSignUp = () => {
-    window.open(generateSignupURL());
+    const currentHost = window.location.host;
+
+    // Staging vs production signup
+    const signupUrl = currentHost.includes('staging')
+        ? 'https://staging-home.deriv.com/signup'
+        : 'https://home.deriv.com/signup';
+
+    window.open(signupUrl, '_blank', 'noopener,noreferrer');
 };
 
 type TLoginUrl = {
@@ -34,6 +40,7 @@ export const loginUrl = ({ language }: TLoginUrl) => {
     const marketing_queries = `${signup_device ? `&signup_device=${signup_device}` : ''}${
         date_first_contact ? `&date_first_contact=${date_first_contact}` : ''
     }`;
+
     const getOAuthUrl = () => {
         const current_domain = getCurrentProductionDomain();
         let oauth_domain = deriv_urls.DERIV_HOST_NAME;
@@ -44,8 +51,7 @@ export const loginUrl = ({ language }: TLoginUrl) => {
             oauth_domain = domain_suffix;
         }
 
-        const url = `https://oauth.${oauth_domain}/oauth2/authorize?app_id=${getAppId()}&l=${language}${marketing_queries}&brand=${website_name.toLowerCase()}`;
-        return url;
+        return `https://oauth.${oauth_domain}/oauth2/authorize?app_id=${getAppId()}&l=${language}${marketing_queries}&brand=${website_name.toLowerCase()}`;
     };
 
     if (server_url && /qa/.test(server_url)) {
@@ -55,5 +61,6 @@ export const loginUrl = ({ language }: TLoginUrl) => {
     if (getAppId() === domain_app_ids[window.location.hostname as keyof typeof domain_app_ids]) {
         return getOAuthUrl();
     }
+
     return urlForCurrentDomain(getOAuthUrl());
 };
