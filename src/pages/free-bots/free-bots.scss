@@ -1,0 +1,44 @@
+.free-bots {
+    padding: 1.6rem;
+}
+
+.free-bots__title {
+    font-size: 1.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.free-bots__subtitle {
+    color: var(--text-less-prominent);
+    margin-bottom: 1.6rem;
+}
+
+.free-bots__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.2rem;
+}
+
+.free-bots__card {
+    background: var(--general-main-2);
+    border-radius: 8px;
+    padding: 1.2rem;
+}
+
+.free-bots__card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+}
+
+.free-bots__card-description {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+}
+
+.free-bots__card-tag {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    background: var(--brand-secondary);
+    color: #fff;
+    text-transform: uppercase;
+}
