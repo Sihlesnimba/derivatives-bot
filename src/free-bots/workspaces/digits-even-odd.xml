@@ -1,0 +1,11 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="trade_definition" x="40" y="40">
+    <field name="MARKET">synthetic_index</field>
+    <field name="SYMBOL">R_10</field>
+    <statement name="TRADE_OPTIONS">
+      <block type="digits_even_odd">
+        <field name="DIGIT">even</field>
+      </block>
+    </statement>
+  </block>
+</xml>

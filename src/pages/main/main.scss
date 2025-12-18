@@ -752,3 +752,28 @@
     align-items: center;
     justify-content: center;
 }
+
+/* ================================
+   FIX: Free Bots full-width layout
+   ================================ */
+
+#id-free-bots {
+    width: 100%;
+}
+
+#id-free-bots > div {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Override Deriv tab content container */
+.main__tabs .tabs__content {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Ensure Free Bots is not constrained like Dashboard */
+#id-free-bots .free-bots {
+    width: 100%;
+    max-width: 100%;
+}

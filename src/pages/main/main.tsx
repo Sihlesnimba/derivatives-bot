@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ChunkLoader from '@/components/loader/chunk-loader';
@@ -8,7 +8,7 @@ import Dialog from '@/components/shared_ui/dialog';
 import MobileWrapper from '@/components/shared_ui/mobile-wrapper';
 import Tabs from '@/components/shared_ui/tabs/tabs';
 import TradingViewModal from '@/components/trading-view-chart/trading-view-modal';
-import { TAB_IDS } from '@/constants/bot-contents';
+import { DBOT_TABS, TAB_IDS } from '@/constants/bot-contents';
 import { api_base } from '@/external/bot-skeleton';
 import { CONNECTION_STATUS } from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
 import { useApiBase } from '@/hooks/useApiBase';
@@ -24,6 +24,7 @@ import RunPanel from '../../components/run-panel';
 import ChartModal from '../chart/chart-modal';
 import Dashboard from '../dashboard';
 import RunStrategy from '../dashboard/run-strategy';
+import FreeBots from '../free-bots'; // ✅ IMPORTANT
 import './main.scss';
 
 const ChartWrapper = lazy(() => import('../chart/chart-wrapper'));
@@ -32,6 +33,7 @@ const Tutorial = lazy(() => import('../tutorials'));
 const AppWrapper = observer(() => {
     const { connectionStatus } = useApiBase();
     const { dashboard, run_panel, quick_strategy, summary_card } = useStore();
+
     const {
         active_tab,
         active_tour,
@@ -43,29 +45,36 @@ const AppWrapper = observer(() => {
         setTourDialogVisibility,
     } = dashboard;
 
-    const { is_dialog_open, dialog_options, onCancelButtonClick, onCloseDialog, onOkButtonClick, stopBot } = run_panel;
+    const {
+        is_dialog_open,
+        dialog_options,
+        onCancelButtonClick,
+        onCloseDialog,
+        onOkButtonClick,
+        stopBot,
+    } = run_panel;
 
     const { is_open } = quick_strategy;
     const { clear } = summary_card;
 
-    const { cancel_button_text, ok_button_text, title, message, dismissable, is_closed_on_cancel } = dialog_options as {
-        [key: string]: string;
-    };
+    const { cancel_button_text, ok_button_text, title, message, dismissable, is_closed_on_cancel } =
+        dialog_options as {
+            [key: string]: string;
+        };
 
-    const init_render = React.useRef(true);
+    const init_render = useRef(true);
 
-    // Hash order aligned with DBOT_TABS
     const hash = ['dashboard', 'bot_builder', 'free_bots', 'chart', 'tutorial'];
 
     const location = useLocation();
     const navigate = useNavigate();
 
-    let tab_value: number | string = active_tab;
     const getHashedValue = (tab: number) => {
-        tab_value = location.hash?.split('#')[1];
-        if (!tab_value) return tab;
-        return Number(hash.indexOf(String(tab_value)));
+        const value = location.hash?.replace('#', '');
+        if (!value) return tab;
+        return Math.max(hash.indexOf(value), 0);
     };
+
     const active_hash_tab = getHashedValue(active_tab);
 
     useEffect(() => {
@@ -78,7 +87,7 @@ const AppWrapper = observer(() => {
                 setWebSocketState(false);
             }
         }
-    }, [clear, connectionStatus, setWebSocketState, stopBot]);
+    }, [connectionStatus]);
 
     useEffect(() => {
         if (is_open) {
@@ -86,31 +95,22 @@ const AppWrapper = observer(() => {
         }
 
         if (init_render.current) {
-            setActiveTab(Number(active_hash_tab));
+            setActiveTab(active_hash_tab);
             init_render.current = false;
         } else {
-            navigate(`#${hash[active_tab] || hash[0]}`);
+            navigate(`#${hash[active_tab]}`);
         }
 
-        if (active_tour !== '') {
+        if (active_tour) {
             setActiveTour('');
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [active_tab]);
 
-    const handleTabChange = React.useCallback(
-        (tab_index: number) => {
-            setActiveTab(tab_index);
-            const el_id = TAB_IDS[tab_index];
-            if (el_id) {
-                const el_tab = document.getElementById(el_id);
-                setTimeout(() => {
-                    el_tab?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                }, 10);
-            }
-        },
-        [setActiveTab]
-    );
+    const handleTabChange = (tab_index: number) => {
+        setActiveTab(tab_index);
+        const el_id = TAB_IDS[tab_index];
+        document.getElementById(el_id)?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     const handleLoginGeneration = () => {
         redirectToLogin(false, localStorage.getItem('i18n_language') || 'en', true);
@@ -144,7 +144,7 @@ const AppWrapper = observer(() => {
                         id='id-bot-builder'
                     />
 
-                    {/* Free Bots */}
+                    {/* ✅ Free Bots – FIXED */}
                     <div
                         label={
                             <>
@@ -154,10 +154,7 @@ const AppWrapper = observer(() => {
                         }
                         id='id-free-bots'
                     >
-                        <div style={{ padding: '2rem', textAlign: 'center' }}>
-                            <h2>Free Bots</h2>
-                            <p>Curated automated bots will appear here soon.</p>
-                        </div>
+                        <FreeBots />
                     </div>
 
                     {/* Charts */}
