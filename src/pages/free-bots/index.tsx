@@ -10,11 +10,6 @@ const FreeBots = observer(() => {
     const { dashboard } = useStore();
     const { setActiveTab } = dashboard;
 
-    const handleLoadBot = async (workspace: string) => {
-        await loadFreeBotWorkspace(workspace);
-        setActiveTab(DBOT_TABS.BOT_BUILDER);
-    };
-
     return (
         <div className='free-bots'>
             <h2 className='free-bots__heading'>Free Bots</h2>
@@ -22,13 +17,17 @@ const FreeBots = observer(() => {
             <div className='free-bots__list'>
                 {FREE_BOTS.map(bot => (
                     <div key={bot.id} className='free-bots__card'>
-                        <span className='free-bots__name'>{bot.name}</span>
+                        <div className='free-bots__name'>{bot.name}</div>
 
                         <button
                             className='free-bots__button'
-                            onClick={() => handleLoadBot(bot.workspace)}
+                            onClick={async () => {
+                                if (!bot.workspace) return;
+                                await loadFreeBotWorkspace(bot.workspace);
+                                setActiveTab(DBOT_TABS.BOT_BUILDER);
+                            }}
                         >
-                            Load bot
+                            Load Bot
                         </button>
                     </div>
                 ))}
